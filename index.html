@@ -24,12 +24,12 @@ body { overflow-x: hidden; }
 /* Split words with spacing for mobile */
 .name-container span {
     display: inline-block;
-    margin-right: 0.5rem;
+    margin-right: 0.25rem;
 }
 
 @media (max-width: 768px) {
     .name-container span {
-        margin-right: 1.5rem; /* increased spacing for mobile */
+        margin-right: 2rem; /* extra spacing on mobile */
     }
 }
 </style>
@@ -37,20 +37,18 @@ body { overflow-x: hidden; }
 <body class="min-h-screen bg-white relative">
 <div class="relative z-10 max-w-4xl mx-auto px-4 py-8">
 
-    <!-- Invitation Text -->
     <div class="text-center mb-12">
         <p class="text-xl md:text-2xl text-gray-800 font-medium font-serif italic leading-relaxed">
             You are warmly invited to the blessed Waleema of
         </p>
     </div>
 
-    <!-- Names Section -->
     <div class="text-center mb-16 name-container">
         <h2 class="text-3xl md:text-4xl font-normal text-gray-900 mb-6 tracking-wide leading-relaxed" style="font-family: 'Zapfino', cursive; font-size: 2.8rem;">
             <span>Razim</span><span>Jamaldeen</span>
         </h2>
         <div class="text-4xl font-bold text-gray-700 mb-6 leading-tight" style="font-family: 'Playfair Display', serif;">
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <!-- big space -->
+            &
         </div>
         <h2 class="text-3xl md:text-4xl font-normal text-gray-900 tracking-wide leading-relaxed" style="font-family: 'Zapfino', cursive; font-size: 2.8rem;">
             <span>Shehani</span><span>Lantra</span>
@@ -221,10 +219,10 @@ function updateCountdown() {
 updateCountdown();
 setInterval(updateCountdown, 1000);
 
-// RSVP Form with Google Sheets Integration
+// RSVP Form Submission to Google Sheet
+const sheetURL = 'https://script.google.com/macros/s/AKfycbw58wQ2Zsx23w__3MWpSZJeu8eVLQsWNca4sB8R1Rk8k_EoVovtbR43j4LbM-PvwrJQ/exec';
 const rsvpForm = document.getElementById('rsvp-form');
 const rsvpSuccess = document.getElementById('rsvp-success');
-const sheetURL = 'https://script.google.com/macros/s/AKfycbw58wQ2Zsx23w__3MWpSZJeu8eVLQsWNca4sB8R1Rk8k_EoVovtbR43j4LbM-PvwrJQ/exec';
 
 rsvpForm.addEventListener('submit', function(e) {
     e.preventDefault();
@@ -232,24 +230,20 @@ rsvpForm.addEventListener('submit', function(e) {
     const name = document.getElementById('name').value;
     const attending = document.querySelector('input[name="attending"]:checked').value;
 
-    fetch(sheetURL, {
-        method: 'POST',
-        body: JSON.stringify({ name, attending }),
-        headers: { 'Content-Type': 'application/json' }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'success') {
-            rsvpForm.classList.add('hidden');
-            rsvpSuccess.classList.remove('hidden');
-            setTimeout(() => {
-                rsvpSuccess.classList.add('hidden');
-                rsvpForm.classList.remove('hidden');
-                rsvpForm.reset();
-            }, 3000);
-        } else {
-            alert('There was an issue recording your RSVP. Please try again.');
-        }
+    // URL-encoded form data
+    const params = new URLSearchParams();
+    params.append('name', name);
+    params.append('attending', attending);
+
+    fetch(sheetURL + '?' + params.toString(), { method: 'GET', mode: 'no-cors' })
+    .then(() => {
+        rsvpForm.classList.add('hidden');
+        rsvpSuccess.classList.remove('hidden');
+        setTimeout(() => {
+            rsvpSuccess.classList.add('hidden');
+            rsvpForm.classList.remove('hidden');
+            rsvpForm.reset();
+        }, 3000);
     })
     .catch(error => {
         console.error('Error:', error);
